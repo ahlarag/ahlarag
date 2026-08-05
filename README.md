@@ -1,9 +1,34 @@
-# Cartografia de Nueva Esparta
+# SIG de Nueva Esparta y red eléctrica
 
-Entregable para obtener los limites municipales del estado Nueva Esparta
-(Venezuela) desde OpenStreetMap y prepararlos para PostgreSQL/PostGIS.
+Dos entregables complementarios sobre PostgreSQL/PostGIS:
 
-## Contenido
+1. Cartografía municipal del estado Nueva Esparta obtenida de OpenStreetMap.
+2. Sistema de información geográfica de red eléctrica de distribución, con
+   análisis de topología, flujos de carga, maniobras y confiabilidad.
+
+## Red eléctrica
+
+- `sql/010_electric_network_schema.sql`: modelo de datos de la red, de la
+  subestación al cliente.
+- `sql/011_electric_network_topology.sql`: funciones de trazado de energización,
+  aislamiento y transferencias.
+- `sql/012_seed_sample_network.sql`: red de ejemplo en Isla de Margarita.
+- `sql/013_validate_topology.sql`: validación automática de las funciones.
+- `electric_gis/`: motor de análisis en Python. Topología, flujo de carga radial
+  de media y baja tensión, maniobras y confiabilidad.
+- `.cursor/skills/electrical-gis-*`: skills con los criterios de ingeniería.
+- `docs/electrical_gis_architecture.md`: arquitectura, alcance y puesta en marcha.
+
+```bash
+createdb gis_electrico
+psql -d gis_electrico -f sql/010_electric_network_schema.sql
+psql -d gis_electrico -f sql/011_electric_network_topology.sql
+psql -d gis_electrico -f sql/012_seed_sample_network.sql
+psql -d gis_electrico -f sql/013_validate_topology.sql
+python3 -m pytest tests -q
+```
+
+## Cartografía municipal
 
 - `scripts/fetch_nueva_esparta_osm.py`: descarga relaciones OSM y genera
   `data/nueva_esparta_estado.geojson`,

@@ -5,8 +5,10 @@ CREATE SCHEMA IF NOT EXISTS cartography;
 CREATE TABLE IF NOT EXISTS cartography.admin_boundaries (
     id bigserial PRIMARY KEY,
     country_code text NOT NULL,
+    area_type text NOT NULL,
+    area_name text NOT NULL,
     state_name text NOT NULL,
-    municipality_name text NOT NULL,
+    municipality_name text,
     admin_level smallint NOT NULL,
     osm_relation_id bigint NOT NULL UNIQUE,
     wikidata text,
@@ -23,7 +25,12 @@ CREATE TABLE IF NOT EXISTS cartography.admin_boundaries (
     label_point geometry(Point, 4326) GENERATED ALWAYS AS (ST_PointOnSurface(geom)) STORED,
     created_at timestamptz NOT NULL DEFAULT now(),
     updated_at timestamptz NOT NULL DEFAULT now(),
+    CONSTRAINT admin_boundaries_area_type_check CHECK (area_type IN ('state', 'municipality')),
     CONSTRAINT admin_boundaries_admin_level_check CHECK (admin_level > 0),
+    CONSTRAINT admin_boundaries_municipality_name_check CHECK (
+        (area_type = 'municipality' AND municipality_name IS NOT NULL)
+        OR (area_type <> 'municipality' AND municipality_name IS NULL)
+    ),
     CONSTRAINT admin_boundaries_fill_opacity_check CHECK (fill_opacity >= 0 AND fill_opacity <= 1)
 );
 
@@ -41,6 +48,9 @@ CREATE INDEX IF NOT EXISTS admin_boundaries_label_point_gix
 
 CREATE INDEX IF NOT EXISTS admin_boundaries_state_name_idx
     ON cartography.admin_boundaries (state_name);
+
+CREATE INDEX IF NOT EXISTS admin_boundaries_area_type_idx
+    ON cartography.admin_boundaries (area_type);
 
 CREATE OR REPLACE FUNCTION cartography.set_updated_at()
 RETURNS trigger

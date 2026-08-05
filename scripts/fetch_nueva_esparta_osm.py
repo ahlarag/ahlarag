@@ -157,7 +157,7 @@ def merge_bboxes(bboxes: list[list[float]]) -> list[float]:
     ]
 
 
-def relation_to_boundary(relation_id: int) -> BoundaryRelation:
+def relation_to_boundary(relation_id: int, expected_admin_level: str | None = None) -> BoundaryRelation:
     xml = fetch_url(f"{OSM_API}/relation/{relation_id}/full")
     root = ET.fromstring(xml)
 
@@ -178,8 +178,10 @@ def relation_to_boundary(relation_id: int) -> BoundaryRelation:
         raise RuntimeError(f"Relation {relation_id} was not found in full OSM payload")
 
     tags = parse_tags(relation)
-    if tags.get("boundary") != "administrative" or tags.get("admin_level") != "6":
-        raise RuntimeError(f"Relation {relation_id} is not a municipality/admin_level=6 boundary")
+    if tags.get("boundary") != "administrative":
+        raise RuntimeError(f"Relation {relation_id} is not an administrative boundary")
+    if expected_admin_level is not None and tags.get("admin_level") != expected_admin_level:
+        raise RuntimeError(f"Relation {relation_id} is not admin_level={expected_admin_level}")
 
     role_segments: dict[str, list[list[int]]] = {"outer": [], "inner": []}
     for member in relation.findall("member"):
@@ -228,8 +230,9 @@ def relation_to_boundary(relation_id: int) -> BoundaryRelation:
     )
 
 
-def feature_from_boundary(boundary: BoundaryRelation) -> dict[str, Any]:
+def feature_from_boundary(boundary: BoundaryRelation, area_type: str) -> dict[str, Any]:
     tags = boundary.tags
+    name_clean = boundary.name.removeprefix("Municipio ").strip()
     return {
         "type": "Feature",
         "id": f"osm:relation:{boundary.osm_relation_id}",
@@ -239,7 +242,9 @@ def feature_from_boundary(boundary: BoundaryRelation) -> dict[str, Any]:
             "state": "Nueva Esparta",
             "state_osm_relation_id": STATE_RELATION_ID,
             "name": boundary.name,
-            "name_clean": boundary.name.removeprefix("Municipio ").strip(),
+            "name_clean": name_clean,
+            "area_name": name_clean,
+            "area_type": area_type,
             "admin_level": int(tags["admin_level"]),
             "osm_relation_id": boundary.osm_relation_id,
             "wikidata": tags.get("wikidata"),
@@ -252,10 +257,10 @@ def feature_from_boundary(boundary: BoundaryRelation) -> dict[str, Any]:
     }
 
 
-def write_geojson(features: list[dict[str, Any]], output_path: Path) -> None:
+def write_geojson(features: list[dict[str, Any]], output_path: Path, collection_name: str) -> None:
     feature_collection = {
         "type": "FeatureCollection",
-        "name": "municipios_nueva_esparta_osm",
+        "name": collection_name,
         "crs": {
             "type": "name",
             "properties": {"name": "urn:ogc:def:crs:OGC:1.3:CRS84"},
@@ -284,26 +289,60 @@ def parse_args() -> argparse.Namespace:
         "--output",
         type=Path,
         default=Path("data/nueva_esparta_municipios.geojson"),
-        help="Output GeoJSON path.",
+        help="Municipality output GeoJSON path.",
+    )
+    parser.add_argument(
+        "--state-output",
+        type=Path,
+        default=Path("data/nueva_esparta_estado.geojson"),
+        help="State boundary output GeoJSON path.",
+    )
+    parser.add_argument(
+        "--margarita-output",
+        type=Path,
+        default=Path("data/isla_margarita_municipios.geojson"),
+        help="Municipality subset for Isla de Margarita. This excludes Villalba/Isla de Coche.",
     )
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
+    state_boundary = relation_to_boundary(args.state_relation_id, expected_admin_level="4")
+    write_geojson(
+        [feature_from_boundary(state_boundary, "state")],
+        args.state_output,
+        "estado_nueva_esparta_osm",
+    )
+    print(f"Wrote {args.state_output} with the Nueva Esparta state boundary")
+
     relation_ids = get_state_subarea_relation_ids(args.state_relation_id)
     features: list[dict[str, Any]] = []
 
     for relation_id in relation_ids:
-        boundary = relation_to_boundary(relation_id)
+        boundary = relation_to_boundary(relation_id, expected_admin_level="6")
         print(f"Fetched {boundary.name} ({relation_id})", file=sys.stderr)
-        features.append(feature_from_boundary(boundary))
+        features.append(feature_from_boundary(boundary, "municipality"))
 
     if len(features) != 11:
         raise RuntimeError(f"Expected 11 municipalities, got {len(features)}")
 
-    write_geojson(features, args.output)
+    write_geojson(features, args.output, "municipios_nueva_esparta_osm")
     print(f"Wrote {args.output} with {len(features)} municipality features")
+
+    margarita_features = [
+        feature
+        for feature in features
+        if feature["properties"]["name_clean"] != "Villalba"
+    ]
+    write_geojson(
+        margarita_features,
+        args.margarita_output,
+        "municipios_isla_margarita_osm",
+    )
+    print(
+        f"Wrote {args.margarita_output} with {len(margarita_features)} Isla de Margarita municipality features"
+    )
     return 0
 
 

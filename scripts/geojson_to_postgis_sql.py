@@ -36,11 +36,18 @@ def parse_args() -> argparse.Namespace:
 def feature_to_insert(feature: dict[str, Any]) -> str:
     properties = feature["properties"]
     geometry_json = json.dumps(feature["geometry"], ensure_ascii=False, separators=(",", ":"))
+    area_type = properties.get("area_type") or (
+        "state" if int(properties["admin_level"]) == 4 else "municipality"
+    )
+    area_name = properties.get("area_name") or properties["name_clean"]
+    municipality_name = area_name if area_type == "municipality" else None
 
     values = [
         sql_literal(properties["country_code"]),
+        sql_literal(area_type),
+        sql_literal(area_name),
         sql_literal(properties["state"]),
-        sql_literal(properties["name_clean"]),
+        sql_literal(municipality_name),
         str(int(properties["admin_level"])),
         str(int(properties["osm_relation_id"])),
         sql_literal(properties.get("wikidata")),
@@ -54,6 +61,8 @@ def feature_to_insert(feature: dict[str, Any]) -> str:
     return f"""
 INSERT INTO cartography.admin_boundaries (
     country_code,
+    area_type,
+    area_name,
     state_name,
     municipality_name,
     admin_level,
@@ -75,10 +84,14 @@ INSERT INTO cartography.admin_boundaries (
     {values[7]},
     {values[8]},
     {values[9]},
-    {values[10]}
+    {values[10]},
+    {values[11]},
+    {values[12]}
 )
 ON CONFLICT (osm_relation_id) DO UPDATE SET
     country_code = EXCLUDED.country_code,
+    area_type = EXCLUDED.area_type,
+    area_name = EXCLUDED.area_name,
     state_name = EXCLUDED.state_name,
     municipality_name = EXCLUDED.municipality_name,
     admin_level = EXCLUDED.admin_level,
@@ -97,7 +110,7 @@ def main() -> int:
     features = feature_collection["features"]
 
     statements = [
-        "-- Generated from data/nueva_esparta_municipios.geojson.",
+        f"-- Generated from {args.input}.",
         "-- Run sql/001_cartography_schema.sql before this file.",
         "BEGIN;",
         *[feature_to_insert(feature) for feature in features],

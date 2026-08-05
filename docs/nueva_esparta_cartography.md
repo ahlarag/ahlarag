@@ -1,15 +1,15 @@
 # Cartografia de Nueva Esparta para PostGIS y mapas libres
 
-Este paquete prepara los limites administrativos municipales del estado Nueva
-Esparta, Venezuela, para almacenarlos en PostgreSQL/PostGIS y dibujarlos en un
-cliente de mapa libre como MapLibre GL JS, OpenLayers o Leaflet.
+Este paquete prepara el limite estatal de Nueva Esparta y sus limites
+administrativos municipales para almacenarlos en PostgreSQL/PostGIS y dibujarlos
+en un cliente de mapa libre como MapLibre GL JS, OpenLayers o Leaflet.
 
 ## Sistema de coordenadas
 
 - Formato de salida: GeoJSON `FeatureCollection`.
 - CRS: WGS84 / CRS84, equivalente practico a EPSG:4326 para GeoJSON.
 - Orden de coordenadas: `[longitud, latitud]`.
-- Tipo geometrico por municipio: `MultiPolygon`.
+- Tipo geometrico por limite: `MultiPolygon`.
 
 Para PostGIS se almacena como:
 
@@ -28,7 +28,15 @@ La fuente usada es OpenStreetMap:
 Al publicar o redistribuir el mapa/datos, incluyan atribucion a OpenStreetMap y
 sus contribuidores segun la ODbL.
 
-## Municipios incluidos
+## Archivos generados
+
+| Archivo | Contenido |
+| --- | --- |
+| `data/nueva_esparta_estado.geojson` | Contorno completo del estado Nueva Esparta, relacion OSM `2269770`. |
+| `data/nueva_esparta_municipios.geojson` | Division politica de los 11 municipios del estado. |
+| `data/isla_margarita_municipios.geojson` | Subconjunto municipal de Isla de Margarita; excluye Villalba/Isla de Coche. |
+
+## Municipios incluidos en la division estatal
 
 | Municipio | Relacion OSM | Wikidata |
 | --- | ---: | --- |
@@ -62,11 +70,13 @@ python3 scripts/fetch_nueva_esparta_osm.py \
 
 El script:
 
-1. Lee la relacion del estado `2269770`.
-2. Extrae sus 11 relaciones municipales `subarea`.
-3. Descarga cada relacion con `/relation/{id}/full`.
-4. Reconstruye los anillos `outer` e `inner`.
-5. Escribe `data/nueva_esparta_municipios.geojson`.
+1. Descarga la relacion del estado `2269770`.
+2. Escribe `data/nueva_esparta_estado.geojson`.
+3. Extrae sus 11 relaciones municipales `subarea`.
+4. Descarga cada relacion con `/relation/{id}/full`.
+5. Reconstruye los anillos `outer` e `inner`.
+6. Escribe `data/nueva_esparta_municipios.geojson`.
+7. Escribe `data/isla_margarita_municipios.geojson` excluyendo Villalba.
 
 ## Importar a PostGIS
 
@@ -74,8 +84,12 @@ Opcion A: SQL generado por este paquete.
 
 ```bash
 python3 scripts/geojson_to_postgis_sql.py
+python3 scripts/geojson_to_postgis_sql.py \
+  --input data/nueva_esparta_estado.geojson \
+  --output sql/003_import_nueva_esparta_estado.sql
 psql "$DATABASE_URL" -f sql/001_cartography_schema.sql
 psql "$DATABASE_URL" -f sql/002_import_nueva_esparta_municipios.sql
+psql "$DATABASE_URL" -f sql/003_import_nueva_esparta_estado.sql
 ```
 
 Opcion B: GDAL/ogr2ogr.
@@ -106,6 +120,8 @@ SELECT jsonb_build_object(
             'id', 'osm:relation:' || osm_relation_id,
             'properties', jsonb_build_object(
                 'id', id,
+                'area_type', area_type,
+                'area_name', area_name,
                 'municipality_name', municipality_name,
                 'osm_relation_id', osm_relation_id,
                 'halo_color', halo_color,
@@ -118,7 +134,8 @@ SELECT jsonb_build_object(
     )
 ) AS geojson
 FROM cartography.admin_boundaries
-WHERE state_name = 'Nueva Esparta';
+WHERE state_name = 'Nueva Esparta'
+  AND area_type = 'municipality';
 ```
 
 ## Ejemplo de halo y transparencia en MapLibre GL JS

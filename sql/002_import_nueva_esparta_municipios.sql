@@ -6,6 +6,8 @@ BEGIN;
 
 INSERT INTO cartography.admin_boundaries (
     country_code,
+    area_type,
+    area_name,
     state_name,
     municipality_name,
     admin_level,
@@ -18,6 +20,8 @@ INSERT INTO cartography.admin_boundaries (
     geom
 ) VALUES (
     'VE',
+    'municipality',
+    'Antolín del Campo',
     'Nueva Esparta',
     'Antolín del Campo',
     6,
@@ -31,6 +35,8 @@ INSERT INTO cartography.admin_boundaries (
 )
 ON CONFLICT (osm_relation_id) DO UPDATE SET
     country_code = EXCLUDED.country_code,
+    area_type = EXCLUDED.area_type,
+    area_name = EXCLUDED.area_name,
     state_name = EXCLUDED.state_name,
     municipality_name = EXCLUDED.municipality_name,
     admin_level = EXCLUDED.admin_level,
@@ -43,6 +49,8 @@ ON CONFLICT (osm_relation_id) DO UPDATE SET
 
 INSERT INTO cartography.admin_boundaries (
     country_code,
+    area_type,
+    area_name,
     state_name,
     municipality_name,
     admin_level,
@@ -55,6 +63,8 @@ INSERT INTO cartography.admin_boundaries (
     geom
 ) VALUES (
     'VE',
+    'municipality',
+    'Arismendi',
     'Nueva Esparta',
     'Arismendi',
     6,
@@ -68,6 +78,8 @@ INSERT INTO cartography.admin_boundaries (
 )
 ON CONFLICT (osm_relation_id) DO UPDATE SET
     country_code = EXCLUDED.country_code,
+    area_type = EXCLUDED.area_type,
+    area_name = EXCLUDED.area_name,
     state_name = EXCLUDED.state_name,
     municipality_name = EXCLUDED.municipality_name,
     admin_level = EXCLUDED.admin_level,
@@ -80,6 +92,8 @@ ON CONFLICT (osm_relation_id) DO UPDATE SET
 
 INSERT INTO cartography.admin_boundaries (
     country_code,
+    area_type,
+    area_name,
     state_name,
     municipality_name,
     admin_level,
@@ -92,6 +106,8 @@ INSERT INTO cartography.admin_boundaries (
     geom
 ) VALUES (
     'VE',
+    'municipality',
+    'Díaz',
     'Nueva Esparta',
     'Díaz',
     6,
@@ -105,6 +121,8 @@ INSERT INTO cartography.admin_boundaries (
 )
 ON CONFLICT (osm_relation_id) DO UPDATE SET
     country_code = EXCLUDED.country_code,
+    area_type = EXCLUDED.area_type,
+    area_name = EXCLUDED.area_name,
     state_name = EXCLUDED.state_name,
     municipality_name = EXCLUDED.municipality_name,
     admin_level = EXCLUDED.admin_level,
@@ -117,6 +135,8 @@ ON CONFLICT (osm_relation_id) DO UPDATE SET
 
 INSERT INTO cartography.admin_boundaries (
     country_code,
+    area_type,
+    area_name,
     state_name,
     municipality_name,
     admin_level,
@@ -129,6 +149,8 @@ INSERT INTO cartography.admin_boundaries (
     geom
 ) VALUES (
     'VE',
+    'municipality',
+    'García',
     'Nueva Esparta',
     'García',
     6,
@@ -142,6 +164,8 @@ INSERT INTO cartography.admin_boundaries (
 )
 ON CONFLICT (osm_relation_id) DO UPDATE SET
     country_code = EXCLUDED.country_code,
+    area_type = EXCLUDED.area_type,
+    area_name = EXCLUDED.area_name,
     state_name = EXCLUDED.state_name,
     municipality_name = EXCLUDED.municipality_name,
     admin_level = EXCLUDED.admin_level,
@@ -154,6 +178,8 @@ ON CONFLICT (osm_relation_id) DO UPDATE SET
 
 INSERT INTO cartography.admin_boundaries (
     country_code,
+    area_type,
+    area_name,
     state_name,
     municipality_name,
     admin_level,
@@ -166,6 +192,8 @@ INSERT INTO cartography.admin_boundaries (
     geom
 ) VALUES (
     'VE',
+    'municipality',
+    'Gómez',
     'Nueva Esparta',
     'Gómez',
     6,
@@ -179,6 +207,8 @@ INSERT INTO cartography.admin_boundaries (
 )
 ON CONFLICT (osm_relation_id) DO UPDATE SET
     country_code = EXCLUDED.country_code,
+    area_type = EXCLUDED.area_type,
+    area_name = EXCLUDED.area_name,
     state_name = EXCLUDED.state_name,
     municipality_name = EXCLUDED.municipality_name,
     admin_level = EXCLUDED.admin_level,
@@ -191,6 +221,8 @@ ON CONFLICT (osm_relation_id) DO UPDATE SET
 
 INSERT INTO cartography.admin_boundaries (
     country_code,
+    area_type,
+    area_name,
     state_name,
     municipality_name,
     admin_level,
@@ -203,6 +235,8 @@ INSERT INTO cartography.admin_boundaries (
     geom
 ) VALUES (
     'VE',
+    'municipality',
+    'Macanao',
     'Nueva Esparta',
     'Macanao',
     6,
@@ -216,6 +250,8 @@ INSERT INTO cartography.admin_boundaries (
 )
 ON CONFLICT (osm_relation_id) DO UPDATE SET
     country_code = EXCLUDED.country_code,
+    area_type = EXCLUDED.area_type,
+    area_name = EXCLUDED.area_name,
     state_name = EXCLUDED.state_name,
     municipality_name = EXCLUDED.municipality_name,
     admin_level = EXCLUDED.admin_level,
@@ -228,6 +264,8 @@ ON CONFLICT (osm_relation_id) DO UPDATE SET
 
 INSERT INTO cartography.admin_boundaries (
     country_code,
+    area_type,
+    area_name,
     state_name,
     municipality_name,
     admin_level,
@@ -240,6 +278,8 @@ INSERT INTO cartography.admin_boundaries (
     geom
 ) VALUES (
     'VE',
+    'municipality',
+    'Maneiro',
     'Nueva Esparta',
     'Maneiro',
     6,
@@ -253,6 +293,8 @@ INSERT INTO cartography.admin_boundaries (
 )
 ON CONFLICT (osm_relation_id) DO UPDATE SET
     country_code = EXCLUDED.country_code,
+    area_type = EXCLUDED.area_type,
+    area_name = EXCLUDED.area_name,
     state_name = EXCLUDED.state_name,
     municipality_name = EXCLUDED.municipality_name,
     admin_level = EXCLUDED.admin_level,
@@ -265,6 +307,8 @@ ON CONFLICT (osm_relation_id) DO UPDATE SET
 
 INSERT INTO cartography.admin_boundaries (
     country_code,
+    area_type,
+    area_name,
     state_name,
     municipality_name,
     admin_level,
@@ -277,6 +321,8 @@ INSERT INTO cartography.admin_boundaries (
     geom
 ) VALUES (
     'VE',
+    'municipality',
+    'Marcano',
     'Nueva Esparta',
     'Marcano',
     6,
@@ -290,6 +336,8 @@ INSERT INTO cartography.admin_boundaries (
 )
 ON CONFLICT (osm_relation_id) DO UPDATE SET
     country_code = EXCLUDED.country_code,
+    area_type = EXCLUDED.area_type,
+    area_name = EXCLUDED.area_name,
     state_name = EXCLUDED.state_name,
     municipality_name = EXCLUDED.municipality_name,
     admin_level = EXCLUDED.admin_level,
@@ -302,6 +350,8 @@ ON CONFLICT (osm_relation_id) DO UPDATE SET
 
 INSERT INTO cartography.admin_boundaries (
     country_code,
+    area_type,
+    area_name,
     state_name,
     municipality_name,
     admin_level,
@@ -314,6 +364,8 @@ INSERT INTO cartography.admin_boundaries (
     geom
 ) VALUES (
     'VE',
+    'municipality',
+    'Mariño',
     'Nueva Esparta',
     'Mariño',
     6,
@@ -327,6 +379,8 @@ INSERT INTO cartography.admin_boundaries (
 )
 ON CONFLICT (osm_relation_id) DO UPDATE SET
     country_code = EXCLUDED.country_code,
+    area_type = EXCLUDED.area_type,
+    area_name = EXCLUDED.area_name,
     state_name = EXCLUDED.state_name,
     municipality_name = EXCLUDED.municipality_name,
     admin_level = EXCLUDED.admin_level,
@@ -339,6 +393,8 @@ ON CONFLICT (osm_relation_id) DO UPDATE SET
 
 INSERT INTO cartography.admin_boundaries (
     country_code,
+    area_type,
+    area_name,
     state_name,
     municipality_name,
     admin_level,
@@ -351,6 +407,8 @@ INSERT INTO cartography.admin_boundaries (
     geom
 ) VALUES (
     'VE',
+    'municipality',
+    'Tubores',
     'Nueva Esparta',
     'Tubores',
     6,
@@ -364,6 +422,8 @@ INSERT INTO cartography.admin_boundaries (
 )
 ON CONFLICT (osm_relation_id) DO UPDATE SET
     country_code = EXCLUDED.country_code,
+    area_type = EXCLUDED.area_type,
+    area_name = EXCLUDED.area_name,
     state_name = EXCLUDED.state_name,
     municipality_name = EXCLUDED.municipality_name,
     admin_level = EXCLUDED.admin_level,
@@ -376,6 +436,8 @@ ON CONFLICT (osm_relation_id) DO UPDATE SET
 
 INSERT INTO cartography.admin_boundaries (
     country_code,
+    area_type,
+    area_name,
     state_name,
     municipality_name,
     admin_level,
@@ -388,6 +450,8 @@ INSERT INTO cartography.admin_boundaries (
     geom
 ) VALUES (
     'VE',
+    'municipality',
+    'Villalba',
     'Nueva Esparta',
     'Villalba',
     6,
@@ -401,6 +465,8 @@ INSERT INTO cartography.admin_boundaries (
 )
 ON CONFLICT (osm_relation_id) DO UPDATE SET
     country_code = EXCLUDED.country_code,
+    area_type = EXCLUDED.area_type,
+    area_name = EXCLUDED.area_name,
     state_name = EXCLUDED.state_name,
     municipality_name = EXCLUDED.municipality_name,
     admin_level = EXCLUDED.admin_level,

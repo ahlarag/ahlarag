@@ -250,56 +250,69 @@ BEGIN
 END;
 $$;
 
--- Enlaces de transferencia disponibles para recuperar un circuito.
--- Devuelve los enlaces normalmente abiertos cuyo lado remoto está energizado
--- desde otro circuito, es decir, los candidatos reales de respaldo.
-CREATE OR REPLACE FUNCTION electrical.fn_transfer_candidates(p_feeder_id integer)
+-- Enlaces de transferencia disponibles para respaldar un circuito.
+--
+-- Se distinguen dos casos, porque la maniobra requerida es distinta:
+--   * dead_load_pickup: un extremo energizado y el otro sin tensión. Cerrarlo
+--     devuelve servicio y no exige abrir nada más.
+--   * live_transfer: ambos extremos energizados. Exige abrir otro punto para no
+--     dejar dos fuentes en paralelo.
+CREATE OR REPLACE FUNCTION electrical.fn_transfer_candidates(
+    p_feeder_id integer,
+    p_force_open bigint[] DEFAULT '{}',
+    p_force_close bigint[] DEFAULT '{}'
+)
 RETURNS TABLE (
     switch_device_id bigint,
     code text,
+    device_type text,
     remote_controlled boolean,
-    backup_feeder_id integer,
-    backup_feeder_code text,
+    transfer_kind text,
+    remote_node_id bigint,
     geom geometry
 )
 LANGUAGE sql
 STABLE
 AS $$
-    WITH energized AS (
-        SELECT n.node_id FROM electrical.fn_energized_nodes('{}', '{}') AS n
-    ),
-    feeder_nodes AS (
-        SELECT n.node_id
-        FROM electrical.fn_energized_nodes('{}', '{}', ARRAY[f.source_node_id]) AS n
-        CROSS JOIN electrical.feeder AS f
+    WITH feeder_source AS (
+        SELECT ARRAY[f.source_node_id] AS source_nodes
+        FROM electrical.feeder AS f
         WHERE f.id = p_feeder_id
+    ),
+    own_nodes AS (
+        SELECT n.node_id
+        FROM feeder_source AS fs
+        CROSS JOIN LATERAL electrical.fn_energized_nodes(
+            p_force_open, p_force_close, fs.source_nodes
+        ) AS n
+    ),
+    live_nodes AS (
+        SELECT n.node_id
+        FROM electrical.fn_energized_nodes(p_force_open, p_force_close) AS n
+    ),
+    ties AS (
+        SELECT
+            sd.*,
+            sd.from_node_id IN (SELECT node_id FROM live_nodes) AS from_live,
+            sd.to_node_id IN (SELECT node_id FROM live_nodes) AS to_live,
+            sd.from_node_id IN (SELECT node_id FROM own_nodes) AS from_own,
+            sd.to_node_id IN (SELECT node_id FROM own_nodes) AS to_own
+        FROM electrical.switch_device AS sd
+        WHERE sd.is_tie
+          AND NOT (
+              sd.id = ANY (p_force_close)
+              OR (sd.current_state = 'closed' AND NOT sd.id = ANY (p_force_open))
+          )
     )
     SELECT
-        sd.id,
-        sd.code,
-        sd.remote_controlled,
-        bf.id,
-        bf.code,
-        sd.geom::geometry
-    FROM electrical.switch_device AS sd
-    JOIN electrical.node AS remote_node
-        ON remote_node.id = CASE
-            WHEN sd.from_node_id IN (SELECT node_id FROM feeder_nodes) THEN sd.to_node_id
-            ELSE sd.from_node_id
-        END
-    LEFT JOIN electrical.feeder AS bf ON bf.id <> p_feeder_id AND bf.id = (
-        SELECT e.feeder_id
-        FROM electrical.v_network_edge AS e
-        WHERE (e.from_node_id = remote_node.id OR e.to_node_id = remote_node.id)
-          AND e.feeder_id IS NOT NULL
-          AND e.feeder_id <> p_feeder_id
-        LIMIT 1
-    )
-    WHERE sd.is_tie
-      AND sd.current_state = 'open'
-      AND (
-          sd.from_node_id IN (SELECT node_id FROM feeder_nodes)
-          OR sd.to_node_id IN (SELECT node_id FROM feeder_nodes)
-      )
-      AND remote_node.id IN (SELECT node_id FROM energized);
+        t.id,
+        t.code,
+        t.device_type,
+        t.remote_controlled,
+        CASE WHEN t.from_live AND t.to_live THEN 'live_transfer' ELSE 'dead_load_pickup' END,
+        CASE WHEN t.from_live THEN t.to_node_id ELSE t.from_node_id END,
+        t.geom::geometry
+    FROM ties AS t
+    WHERE (t.from_live <> t.to_live)
+       OR (t.from_live AND t.to_live AND (t.from_own OR t.to_own));
 $$;

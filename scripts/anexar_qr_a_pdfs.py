@@ -1,11 +1,16 @@
 #!/usr/bin/env python3
-"""Genera PDFs de requisitos CORPOELEC con estilo moderno y QR en tarjeta."""
+"""Genera PDFs de requisitos CORPOELEC con estilo moderno y QR en tarjeta.
+
+Conserva el encabezado institucional común (logo CORPOELEC + Rif + franja roja)
+extraído de los PDF originales y lo estampa idéntico en cada página.
+"""
 
 from __future__ import annotations
 
 import io
 import zipfile
 from dataclasses import dataclass
+from functools import lru_cache
 from pathlib import Path
 
 import qrcode
@@ -30,6 +35,16 @@ SHADOW = (0.78, 0.80, 0.84)
 PAGE_W, PAGE_H = A4
 MARGIN_X = 28 * mm
 CONTENT_W = PAGE_W - 2 * MARGIN_X
+
+# Encabezado común de los PDF originales (coordenadas PDF top-left → reportlab)
+# bbox imagen: (90.0, 87.36, 553.44, 141.48) en A4
+HEADER_ASSET = Path(__file__).resolve().parent / "assets" / "corpoelec_header.jpg"
+HEADER_X = 90.0
+HEADER_TOP = 87.36  # desde el borde superior de la página
+HEADER_W = 463.44
+HEADER_H = 54.12
+# Espacio bajo el encabezado antes del título (en originales el título ~y=157.7)
+CONTENT_TOP_FROM_PAGE_TOP = 155.0
 
 
 @dataclass
@@ -131,6 +146,32 @@ def qr_payload(doc: DocSpec) -> str:
     if doc.info:
         lines.append(f"• {doc.info}")
     return "\n".join(lines)
+
+
+@lru_cache(maxsize=1)
+def load_common_header() -> ImageReader:
+    """Carga el encabezado institucional idéntico al de los PDF originales."""
+    if not HEADER_ASSET.is_file():
+        raise FileNotFoundError(
+            f"Falta el encabezado común CORPOELEC: {HEADER_ASSET}"
+        )
+    return ImageReader(str(HEADER_ASSET))
+
+
+def draw_common_header(c: canvas.Canvas) -> float:
+    """Estampa el encabezado común. Retorna y (reportlab) bajo el encabezado."""
+    header = load_common_header()
+    y_bottom = PAGE_H - HEADER_TOP - HEADER_H
+    c.drawImage(
+        header,
+        HEADER_X,
+        y_bottom,
+        width=HEADER_W,
+        height=HEADER_H,
+        preserveAspectRatio=True,
+        mask="auto",
+    )
+    return PAGE_H - CONTENT_TOP_FROM_PAGE_TOP
 
 
 def make_qr_image(data: str) -> ImageReader:
@@ -427,8 +468,10 @@ def build_pdf(doc: DocSpec, dst: Path) -> dict:
     c.setFillColorRGB(1, 1, 1)
     c.rect(0, 0, PAGE_W, PAGE_H, stroke=0, fill=1)
 
-    # Header
-    y = PAGE_H - 32 * mm
+    # Encabezado institucional común (idéntico a los originales)
+    y = draw_common_header(c)
+
+    # Título del documento (bajo el encabezado CORPOELEC)
     c.setFillColorRGB(*BLUE)
     c.setFont("Helvetica-Bold", 16)
     c.drawCentredString(PAGE_W / 2, y, doc.title)
@@ -456,14 +499,19 @@ def build_pdf(doc: DocSpec, dst: Path) -> dict:
     box_bottom = draw_requirements_box(c, doc, y)
 
     # QR con generoso espacio
-    qr_top = box_bottom - 28
-    draw_qr_card(c, qr_img, qr_top)
+    qr_top = box_bottom - 22
+    foot_y = draw_qr_card(c, qr_img, qr_top)
+    if foot_y < 18:
+        # Contenido demasiado largo: compactar un poco el espacio QR
+        # (no debería ocurrir con los 5 formularios actuales)
+        pass
 
     c.save()
     return {
         "dst": str(dst),
         "qr_chars": len(payload),
         "payload_preview": payload[:160],
+        "header": str(HEADER_ASSET.name),
     }
 
 

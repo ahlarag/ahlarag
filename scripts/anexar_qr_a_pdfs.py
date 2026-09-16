@@ -18,11 +18,13 @@ from reportlab.lib.utils import ImageReader
 # Capacidad aproximada QR versión 40-L ~2953 bytes; con M menos.
 # Estos formularios tienen <600 chars; caben con holgura.
 MAX_QR_CHARS = 2000
-# QR sintético: ~2.2 cm (~62 pt), pie discreto sin banda grande.
-QR_SIZE_MM = 22
-MARGIN_BOTTOM_MM = 5
-MARGIN_RIGHT_MM = 5
-LABEL_GAP_MM = 1.5
+# Presentación profesional: QR legible, centrado bajo los requisitos.
+QR_SIZE_MM = 42
+GAP_AFTER_CONTENT_MM = 14
+MARGIN_BOTTOM_MM = 18
+FRAME_PAD_MM = 7
+LABEL_GAP_MM = 5
+CAPTION = "Escanee para ver los requisitos"
 
 
 def clean_text(text: str) -> str:
@@ -73,8 +75,8 @@ def make_qr_image(data: str) -> ImageReader:
     qr = qrcode.QRCode(
         version=None,
         error_correction=qrcode.constants.ERROR_CORRECT_M,
-        box_size=6,
-        border=1,
+        box_size=10,
+        border=2,
     )
     qr.add_data(data)
     qr.make(fit=True)
@@ -92,32 +94,65 @@ def build_qr_overlay(
     label: str,
     content_bottom: float | None = None,
 ) -> bytes:
-    """Estampa un QR compacto abajo a la derecha, sin expandir el layout."""
+    """QR centrado bajo los requisitos, con recuadro y tipografía sobria."""
     packet = io.BytesIO()
     c = canvas.Canvas(packet, pagesize=(page_width, page_height))
 
     qr_size = QR_SIZE_MM * mm
+    frame_pad = FRAME_PAD_MM * mm
+    gap_after = GAP_AFTER_CONTENT_MM * mm
     margin_bottom = MARGIN_BOTTOM_MM * mm
-    margin_right = MARGIN_RIGHT_MM * mm
-    label_h = 7
+    label_gap = LABEL_GAP_MM * mm
+    label_h = 11
+    frame_size = qr_size + 2 * frame_pad
+    block_h = label_h + label_gap + frame_size
 
-    # Siempre al pie inferior derecho: discreto y predecible.
-    y_qr = margin_bottom
-    x_qr = page_width - margin_right - qr_size
-
-    # Si el contenido llega muy abajo, no taparlo: subir solo lo necesario.
+    # Colocar el bloque justo debajo del texto de requisitos (Y reportlab).
     if content_bottom is not None:
-        free_below = page_height - content_bottom
-        needed = qr_size + margin_bottom + label_h + LABEL_GAP_MM * mm
-        if free_below < needed:
-            # Solapa el margen inferior del formulario; sigue siendo sintético.
-            y_qr = max(2 * mm, margin_bottom)
+        y_top_of_block = page_height - content_bottom - gap_after
+        y_frame = y_top_of_block - label_h - label_gap - frame_size
+        if y_frame < margin_bottom:
+            y_frame = margin_bottom
+    else:
+        y_frame = margin_bottom
 
-    c.setFont("Helvetica", 5.5)
-    c.setFillColorRGB(0.35, 0.35, 0.35)
-    c.drawRightString(x_qr + qr_size, y_qr + qr_size + LABEL_GAP_MM * mm, label)
+    x_frame = (page_width - frame_size) / 2.0
+    x_qr = x_frame + frame_pad
+    y_qr = y_frame + frame_pad
+    cx = page_width / 2.0
+
+    # Fondo suave del recuadro
+    c.setFillColorRGB(0.985, 0.985, 0.98)
+    c.setStrokeColorRGB(0.22, 0.28, 0.32)
+    c.setLineWidth(1.1)
+    c.roundRect(x_frame, y_frame, frame_size, frame_size, 4, stroke=1, fill=1)
+
+    # Marco interior fino
+    inset = 2.2
+    c.setStrokeColorRGB(0.55, 0.60, 0.63)
+    c.setLineWidth(0.5)
+    c.rect(
+        x_frame + inset,
+        y_frame + inset,
+        frame_size - 2 * inset,
+        frame_size - 2 * inset,
+        stroke=1,
+        fill=0,
+    )
 
     c.drawImage(qr_img, x_qr, y_qr, width=qr_size, height=qr_size, mask="auto")
+
+    # Etiqueta centrada sobre el recuadro
+    c.setFillColorRGB(0.18, 0.22, 0.26)
+    c.setFont("Helvetica-Bold", 9)
+    c.drawCentredString(cx, y_frame + frame_size + label_gap, label)
+
+    # Línea decorativa corta bajo la etiqueta
+    line_w = 36
+    ly = y_frame + frame_size + label_gap - 3.5
+    c.setStrokeColorRGB(0.70, 0.55, 0.12)  # acento dorado sobrio (CORPOELEC)
+    c.setLineWidth(0.8)
+    c.line(cx - line_w / 2, ly, cx + line_w / 2, ly)
 
     c.save()
     packet.seek(0)
@@ -143,7 +178,7 @@ def process_pdf(src: Path, dst: Path) -> dict:
             w,
             h,
             qr_img,
-            "QR",
+            CAPTION,
             bottom,
         )
         overlay_reader = PdfReader(io.BytesIO(overlay_bytes))

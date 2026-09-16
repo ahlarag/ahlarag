@@ -105,7 +105,6 @@ def build_qr_overlay(
     label_gap = LABEL_GAP_MM * mm
     label_h = 11
     frame_size = qr_size + 2 * frame_pad
-    block_h = label_h + label_gap + frame_size
 
     # Colocar el bloque justo debajo del texto de requisitos (Y reportlab).
     if content_bottom is not None:

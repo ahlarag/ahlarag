@@ -1,110 +1,68 @@
 === Solicitud_De_Servicio_Persona_Natural_con_QR.pdf ===
-Fuente: /home/ubuntu/.cursor/projects/workspace/uploads/Solicitud_De_Servicio_Persona_Natural_1b2c.pdf
-Caracteres en QR: [393]
+Fuente: Solicitud_De_Servicio_Persona_Natural_1b2c.pdf
+Caracteres en QR: 394
 REQUISITOS SOLICITUD DE SERVICIO
 PERSONA NATURAL
-•
-Copia del documento de propiedad notariado o registrado.
-•
-Fotocopia de la Cédula de Identidad del Propietario.
-•
-Rif actualizado
-•
-Carga (descripción de electrodomésticos)
-•
-Croquis de Ubicación
-•
-Copia de una Factura de Electricidad del vecino más
-cercano.
-•
-En caso de NO ser el Propietario traer Autorización y Copia
-de CI del autorizado.
+
+• Copia del documento de propiedad notariado o registrado.
+• Fotocopia de la Cédula de Identidad del Propietario.
+• Rif actualizado
+• Carga (descripción de electrodomésticos)
+• Croquis de Ubicación
+• Copia de una Factura de Electricidad del vecino más cercano.
+• En caso de NO ser el Propietario traer Autorización y Copia de CI del autorizado.
 
 === Solicitud_De_Servicio_Juridico_con_QR.pdf ===
-Fuente: /home/ubuntu/.cursor/projects/workspace/uploads/Solicitud_De_Servicio_Juridico_99ea.pdf
-Caracteres en QR: [504]
+Fuente: Solicitud_De_Servicio_Juridico_99ea.pdf
+Caracteres en QR: 505
 REQUISITOS SOLICITUD DE SERVICIO
 PERSONA JURIDICA
-•
-Copia del documento de propiedad notariado o registrado.
-•
-Copia del Rif de la empresa
-•
-Copia del registro mercantil
-•
-Acta de asamblea o junta directiva vigente
-•
-Copia de la cedula de identidad del presidente o Rep. legal
-de la empresa.
-•
-Carga (descripción de electrodomésticos)
-•
-Croquis de Ubicación
-•
-Copia de una Factura de Electricidad del vecino más
-cercano.
-•
-En caso de NO ser el Propietario traer Autorización y Copia
-de CI del autorizado.
+
+• Copia del documento de propiedad notariado o registrado.
+• Copia del Rif de la empresa
+• Copia del registro mercantil
+• Acta de asamblea o junta directiva vigente
+• Copia de la cédula de identidad del presidente o Rep. legal de la empresa.
+• Carga (descripción de electrodomésticos)
+• Croquis de Ubicación
+• Copia de una Factura de Electricidad del vecino más cercano.
+• En caso de NO ser el Propietario traer Autorización y Copia de CI del autorizado.
 
 === Cambio_De_Titularidad_Juridico_con_QR.pdf ===
-Fuente: /home/ubuntu/.cursor/projects/workspace/uploads/Cambio_De_Titularidad_Juridico_a089.pdf
-Caracteres en QR: [520]
+Fuente: Cambio_De_Titularidad_Juridico_a089.pdf
+Caracteres en QR: 521
 REQUISITOS
 CAMBIO DE TITULAR PERSONA JURIDICA
-•
-Copia del Documento de Propiedad Registrado o Notariado
-o Contrato de Arrendamiento.
-•
-Copia del R.I.F de la empresa
-•
-Copia del Registro Mercantil
-•
-Acta de Asamblea o Junta Directiva Vigente.
-•
-Copia de la Cédula de Identidad del presidente o Rep. Legal
-de la Empresa.
-•
-Copia de Factura de Electricidad
-•
-En caso de NO ser el Rep. Legal traer Autorización y Copia
-de CI del autorizado.
-•
-Si es Inquilino debe pagar depósito en Garantía. (El monto
-depende de la tarifa).
+
+• Copia del Documento de Propiedad Registrado o Notariado o Contrato de Arrendamiento.
+• Copia del R.I.F de la empresa
+• Copia del Registro Mercantil
+• Acta de Asamblea o Junta Directiva Vigente.
+• Copia de la Cédula de Identidad del presidente o Rep. Legal de la Empresa.
+• Copia de Factura de Electricidad
+• Si es Inquilino debe pagar depósito en Garantía. (El monto depende de la tarifa).
+• En caso de NO ser el Rep. Legal traer Autorización y Copia de CI del autorizado.
 
 === Cambio_De_Titular_Persona_Natural_con_QR.pdf ===
-Fuente: /home/ubuntu/.cursor/projects/workspace/uploads/Cambio_De_Titular_Persona_Natural_c858.pdf
-Caracteres en QR: [305]
+Fuente: Cambio_De_Titular_Persona_Natural_c858.pdf
+Caracteres en QR: 306
 REQUISITOS CAMBIO DE TITULARIDAD
 PERSONA NATURAL
-•
-Copia del Documento de Propiedad Notariado o Registrado
-•
-Fotocopia de la Cédula de Identidad del Propietario.
-•
-Copia de la última Factura de Electricidad pagada.
-•
-En caso de NO ser el Propietario traer Autorización y Copia
-de CI del autorizado.
-•
-Rif.
+
+• Copia del Documento de Propiedad Notariado o Registrado
+• Fotocopia de la Cédula de Identidad del Propietario.
+• Copia de la última Factura de Electricidad pagada.
+• Rif.
+• En caso de NO ser el Propietario traer Autorización y Copia de CI del autorizado.
 
 === Aumento_De_Potencia_con_QR.pdf ===
-Fuente: /home/ubuntu/.cursor/projects/workspace/uploads/Aumento_De_Potencia_daec.pdf
-Caracteres en QR: [300]
+Fuente: Aumento_De_Potencia_daec.pdf
+Caracteres en QR: 301
 REQUISITOS AUMENTO DE POTENCIA
-•
-Fotocopia de la Cédula de Identidad del Propietario.
-•
-Croquis de Ubicación.
-•
-Copia de la última Factura de Electricidad pagada.
-•
-En caso de NO ser el Propietario traer Autorización y Copia
-de CI del autorizado.
-•
-Carga (Descripción de los
-electrodomésticos)
-•
-Rif.
+
+• Fotocopia de la Cédula de Identidad del Propietario.
+• Croquis de Ubicación.
+• Copia de la última Factura de Electricidad pagada.
+• Carga (Descripción de los electrodomésticos)
+• Rif.
+• En caso de NO ser el Propietario traer Autorización y Copia de CI del autorizado.

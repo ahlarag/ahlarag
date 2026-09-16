@@ -18,9 +18,11 @@ from reportlab.lib.utils import ImageReader
 # Capacidad aproximada QR versión 40-L ~2953 bytes; con M menos.
 # Estos formularios tienen <600 chars; caben con holgura.
 MAX_QR_CHARS = 2000
-QR_SIZE_MM = 38
-MARGIN_BOTTOM_MM = 12
-LABEL_GAP_MM = 3
+# QR sintético: ~2.2 cm (~62 pt), pie discreto sin banda grande.
+QR_SIZE_MM = 22
+MARGIN_BOTTOM_MM = 5
+MARGIN_RIGHT_MM = 5
+LABEL_GAP_MM = 1.5
 
 
 def clean_text(text: str) -> str:
@@ -71,8 +73,8 @@ def make_qr_image(data: str) -> ImageReader:
     qr = qrcode.QRCode(
         version=None,
         error_correction=qrcode.constants.ERROR_CORRECT_M,
-        box_size=8,
-        border=2,
+        box_size=6,
+        border=1,
     )
     qr.add_data(data)
     qr.make(fit=True)
@@ -88,35 +90,32 @@ def build_qr_overlay(
     page_height: float,
     qr_img: ImageReader,
     label: str,
-    content_bottom: float | None,
+    content_bottom: float | None = None,
 ) -> bytes:
-    """Dibuja el QR debajo del contenido, o al pie si no hay espacio."""
+    """Estampa un QR compacto abajo a la derecha, sin expandir el layout."""
     packet = io.BytesIO()
     c = canvas.Canvas(packet, pagesize=(page_width, page_height))
 
     qr_size = QR_SIZE_MM * mm
     margin_bottom = MARGIN_BOTTOM_MM * mm
-    label_h = 10
+    margin_right = MARGIN_RIGHT_MM * mm
+    label_h = 7
 
-    # pdfplumber y reportlab: Y crece hacia arriba en reportlab;
-    # pdfplumber top/bottom son desde arriba de la página.
+    # Siempre al pie inferior derecho: discreto y predecible.
+    y_qr = margin_bottom
+    x_qr = page_width - margin_right - qr_size
+
+    # Si el contenido llega muy abajo, no taparlo: subir solo lo necesario.
     if content_bottom is not None:
-        # Espacio libre bajo el texto (desde bottom del contenido hasta borde)
         free_below = page_height - content_bottom
         needed = qr_size + margin_bottom + label_h + LABEL_GAP_MM * mm
-        if free_below >= needed + 8:
-            # Colocar justo debajo del contenido (con pequeño margen)
-            y_qr = page_height - content_bottom - LABEL_GAP_MM * mm - label_h - qr_size
-        else:
-            y_qr = margin_bottom
-    else:
-        y_qr = margin_bottom
+        if free_below < needed:
+            # Solapa el margen inferior del formulario; sigue siendo sintético.
+            y_qr = max(2 * mm, margin_bottom)
 
-    x_qr = (page_width - qr_size) / 2.0
-
-    c.setFont("Helvetica", 8)
-    c.setFillColorRGB(0.15, 0.15, 0.15)
-    c.drawCentredString(page_width / 2.0, y_qr + qr_size + 2, label)
+    c.setFont("Helvetica", 5.5)
+    c.setFillColorRGB(0.35, 0.35, 0.35)
+    c.drawRightString(x_qr + qr_size, y_qr + qr_size + LABEL_GAP_MM * mm, label)
 
     c.drawImage(qr_img, x_qr, y_qr, width=qr_size, height=qr_size, mask="auto")
 
@@ -144,7 +143,7 @@ def process_pdf(src: Path, dst: Path) -> dict:
             w,
             h,
             qr_img,
-            "QR — información de esta hoja",
+            "QR",
             bottom,
         )
         overlay_reader = PdfReader(io.BytesIO(overlay_bytes))
@@ -189,6 +188,8 @@ JOBS = [
 
 
 def main() -> None:
+    import zipfile
+
     uploads = Path("/home/ubuntu/.cursor/projects/workspace/uploads")
     out_dirs = [
         Path("/workspace/dist/pdfs_con_qr"),
@@ -198,6 +199,7 @@ def main() -> None:
         out.mkdir(parents=True, exist_ok=True)
 
     results = []
+    pdf_names: list[str] = []
     for src_name, dst_name in JOBS:
         src = uploads / src_name
         if not src.exists():
@@ -209,7 +211,16 @@ def main() -> None:
         artifact.write_bytes(primary.read_bytes())
         info["artifact"] = str(artifact)
         results.append(info)
+        pdf_names.append(dst_name)
         print(f"OK {dst_name} pages={info['pages']} qr_chars={info['qr_chars']}")
+
+    zip_name = "CORPOELEC_PDFs_con_QR.zip"
+    for out in out_dirs:
+        zip_path = out / zip_name
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
+            for name in pdf_names:
+                zf.write(out_dirs[0] / name, arcname=name)
+        print(f"ZIP: {zip_path}")
 
     # Resumen de payloads
     summary = Path("/workspace/dist/pdfs_con_qr/RESUMEN_QR.txt")
